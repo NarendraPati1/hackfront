@@ -1,0 +1,912 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TicketCollector</title>
+
+  <style>
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f6f7f9;
+      color: #17181b;
+    }
+
+    body { min-height: 100vh; }
+
+    .app {
+      display: flex;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* ---------------- SIDEBAR ---------------- */
+
+    .sidebar {
+      width: 225px;
+      background: #111214;
+      color: #fff;
+      padding: 22px 15px;
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+    }
+
+    .brand {
+      font-size: 20px;
+      font-weight: 750;
+      letter-spacing: -0.03em;
+      margin: 2px 9px 8px;
+    }
+
+    .brand-sub {
+      color: #8e939d;
+      font-size: 12px;
+      margin: 0 9px 30px;
+    }
+
+    .section-label {
+      color: #70757e;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      margin: 0 10px 9px;
+    }
+
+    .nav-item {
+      padding: 10px 12px;
+      border-radius: 8px;
+      margin-bottom: 4px;
+      color: #c8cad0;
+      font-size: 14px;
+    }
+
+    .nav-item.active {
+      background: #24262b;
+      color: #fff;
+    }
+
+    .status {
+      margin-top: auto;
+      padding: 11px 12px;
+      border: 1px solid #2e3137;
+      border-radius: 9px;
+      font-size: 11px;
+      color: #aeb2ba;
+    }
+
+    .dot {
+      display: inline-block;
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #35c978;
+      margin-right: 7px;
+    }
+
+    /* ---------------- MAIN ---------------- */
+
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      overflow: hidden;
+    }
+
+    header {
+      height: 66px;
+      flex-shrink: 0;
+      background: #fff;
+      border-bottom: 1px solid #e5e7eb;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0 25px;
+    }
+
+    .header-title {
+      font-size: 16px;
+      font-weight: 700;
+    }
+
+    .header-sub {
+      color: #777c84;
+      font-size: 12px;
+      margin-top: 3px;
+    }
+
+    .badge {
+      font-size: 11px;
+      font-weight: 600;
+      padding: 6px 9px;
+      border-radius: 999px;
+      background: #eef7f1;
+      color: #207345;
+    }
+
+    .content {
+      flex: 1;
+      display: flex;
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    /* ---------------- CHAT ---------------- */
+
+    .chat {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+      overflow: hidden;
+    }
+
+    .messages {
+      flex: 1;
+      overflow-y: auto;
+      overflow-x: hidden;
+      padding: 30px 7%;
+      min-height: 0;
+    }
+
+    .welcome {
+      max-width: 700px;
+      margin: 10vh auto 0;
+    }
+
+    .welcome h1 {
+      font-size: 30px;
+      margin: 0 0 9px;
+      letter-spacing: -.035em;
+    }
+
+    .welcome p {
+      color: #6b7078;
+      line-height: 1.6;
+      margin: 0;
+    }
+
+    .suggestions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 22px;
+    }
+
+    .suggestion {
+      background: #fff;
+      border: 1px solid #dedfe3;
+      border-radius: 9px;
+      padding: 10px 12px;
+      cursor: pointer;
+      font-size: 13px;
+      color: #24262b;
+    }
+
+    .suggestion:hover {
+      border-color: #a9adb5;
+      background: #fafafa;
+    }
+
+    .msg {
+      max-width: 800px;
+      margin: 0 auto 24px;
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+    }
+
+    .avatar {
+      width: 30px;
+      height: 30px;
+      border-radius: 8px;
+      flex: 0 0 30px;
+      display: grid;
+      place-items: center;
+      font-size: 11px;
+      font-weight: 700;
+      background: #202228;
+      color: white;
+    }
+
+    .msg.user .avatar {
+      background: #e8e9ec;
+      color: #33363c;
+    }
+
+    .bubble {
+      flex: 1;
+      min-width: 0;
+      line-height: 1.65;
+      font-size: 14px;
+      overflow-wrap: anywhere;
+    }
+
+    /* Markdown rendering */
+
+    .bubble p {
+      margin: 0 0 12px;
+    }
+
+    .bubble p:last-child {
+      margin-bottom: 0;
+    }
+
+    .bubble strong {
+      font-weight: 750;
+    }
+
+    .bubble ul,
+    .bubble ol {
+      margin: 7px 0 13px;
+      padding-left: 23px;
+    }
+
+    .bubble li {
+      margin: 4px 0;
+    }
+
+    .bubble code {
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size: 12px;
+      background: #eceef1;
+      padding: 2px 5px;
+      border-radius: 4px;
+    }
+
+    .bubble pre {
+      background: #202228;
+      color: #f4f4f5;
+      padding: 12px;
+      border-radius: 8px;
+      overflow-x: auto;
+      font: 12px/1.5 ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+
+    .composer {
+      flex-shrink: 0;
+      padding: 12px 7% 20px;
+      background: linear-gradient(transparent, #f6f7f9 20%);
+    }
+
+    .input-wrap {
+      max-width: 800px;
+      margin: auto;
+      background: #fff;
+      border: 1px solid #dfe1e5;
+      border-radius: 12px;
+      display: flex;
+      padding: 7px;
+      box-shadow: 0 3px 14px rgba(0,0,0,.04);
+    }
+
+    textarea {
+      border: 0;
+      outline: 0;
+      resize: none;
+      flex: 1;
+      padding: 9px 10px;
+      font: inherit;
+      min-height: 42px;
+      max-height: 120px;
+      line-height: 1.5;
+      width: 100%;
+    }
+
+    button.send {
+      border: 0;
+      background: #17181b;
+      color: white;
+      border-radius: 8px;
+      padding: 0 16px;
+      cursor: pointer;
+      font-weight: 650;
+      flex-shrink: 0;
+    }
+
+    button.send:disabled {
+      opacity: .45;
+      cursor: default;
+    }
+
+    /* ---------------- EVIDENCE ---------------- */
+
+    .evidence {
+      width: 400px;
+      border-left: 1px solid #e1e3e7;
+      background: #fff;
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+      min-width: 0;
+    }
+
+    .evidence-head {
+      padding: 17px 19px;
+      border-bottom: 1px solid #e8e9ec;
+      flex-shrink: 0;
+    }
+
+    .evidence-head strong {
+      display: block;
+      font-size: 14px;
+      color: #17181b;
+    }
+
+    .evidence-head p {
+      margin: 5px 0 0;
+      font-size: 12px;
+      line-height: 1.45;
+      color: #737881;
+    }
+
+    .evidence-body {
+      padding: 15px 17px 20px;
+      overflow-y: auto;
+      overflow-x: hidden;
+      min-height: 0;
+      color: #202124;
+    }
+
+    .empty {
+      color: #777c84;
+      font-size: 13px;
+      line-height: 1.6;
+    }
+
+    .tool-label {
+      font-size: 10px;
+      color: #555a63;
+      font-weight: 700;
+      margin: 5px 0 7px;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+    }
+
+    pre {
+      white-space: pre-wrap;
+      word-break: break-word;
+      color: #202124;
+      background: #f5f6f8;
+      border: 1px solid #dfe1e5;
+      border-radius: 9px;
+      padding: 12px;
+      margin: 0 0 16px;
+      font: 12px/1.6 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+    }
+
+    /* ---------------- RESPONSIVE ---------------- */
+
+    @media (max-width: 950px) {
+      .evidence { width: 340px; }
+      .sidebar { width: 195px; }
+    }
+
+    @media (max-width: 760px) {
+      .sidebar { display: none; }
+      .evidence { display: none; }
+      .messages,
+      .composer {
+        padding-left: 18px;
+        padding-right: 18px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="app">
+
+  <!-- Minimal workspace sidebar -->
+  <aside class="sidebar">
+    <div class="brand">TicketCollector</div>
+    <div class="brand-sub">AI Project Intelligence</div>
+
+    <div class="section-label">Workspace</div>
+
+    <div class="nav-item active">Assistant</div>
+
+    <div class="status">
+      <span class="dot"></span>
+      Neo4j project memory
+    </div>
+  </aside>
+
+  <main>
+
+    <header>
+      <div>
+        <div class="header-title">TicketCollector</div>
+        <div class="header-sub">
+          AI project memory for tickets, dependencies, issues and decisions
+        </div>
+      </div>
+
+      <div class="badge">Connected workspace</div>
+    </header>
+
+    <div class="content">
+
+      <!-- CHAT -->
+      <section class="chat">
+
+        <div class="messages" id="messages">
+
+          <div class="welcome" id="welcome">
+            <h1>Understand your project.</h1>
+            <p>
+              Ask about tickets, blockers, historical issues,
+              decisions, people, or anything connected in your project graph.
+            </p>
+
+            <div class="suggestions">
+              <button class="suggestion"
+                onclick="usePrompt('Why is checkout blocked?')">
+                Why is checkout blocked?
+              </button>
+
+              <button class="suggestion"
+                onclick="usePrompt('Tell me about MYN-90')">
+                Tell me about MYN-90
+              </button>
+
+              <button class="suggestion"
+                onclick="usePrompt('Which employees work on PhonePe?')">
+                Who works on PhonePe?
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="composer">
+          <div class="input-wrap">
+
+            <textarea
+              id="input"
+              placeholder="Ask TicketCollector about your project..."
+              rows="1"></textarea>
+
+            <button
+              class="send"
+              id="send"
+              onclick="sendMessage()">
+              Send
+            </button>
+
+          </div>
+        </div>
+
+      </section>
+
+      <!-- GRAPH EVIDENCE -->
+      <aside class="evidence">
+
+        <div class="evidence-head">
+          <strong>Graph evidence</strong>
+          <p>
+            Retrieved from Neo4j before the agent generates its answer.
+          </p>
+        </div>
+
+        <div class="evidence-body" id="evidence">
+
+          <div class="empty">
+            Ask a project question to see the graph evidence
+            used by TicketCollector.
+          </div>
+
+        </div>
+
+      </aside>
+
+    </div>
+  </main>
+</div>
+
+
+<script>
+
+  const input = document.getElementById("input");
+  const messages = document.getElementById("messages");
+  const evidence = document.getElementById("evidence");
+  const send = document.getElementById("send");
+
+
+  /* ---------------------------------------------------------
+     Simple Markdown renderer
+
+     Supports:
+     - **bold**
+     - bullet lists
+     - numbered lists
+     - inline code
+     - code blocks
+     - paragraphs
+  --------------------------------------------------------- */
+
+  function escapeHtml(text) {
+
+    return text
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+
+  }
+
+
+  function renderMarkdown(markdown) {
+
+    let text = String(markdown || "")
+      .replace(/\r\n/g, "\n");
+
+    const codeBlocks = [];
+
+    // Protect fenced code blocks.
+    text = text.replace(
+      /```(?:\w+)?\n([\s\S]*?)```/g,
+      function(_, code) {
+
+        const id = codeBlocks.length;
+
+        codeBlocks.push(
+          "<pre>" + escapeHtml(code.trim()) + "</pre>"
+        );
+
+        return "\n@@CODE" + id + "@@\n";
+      }
+    );
+
+    let lines = text.split("\n");
+    let html = "";
+    let inUl = false;
+    let inOl = false;
+
+    function closeLists() {
+
+      if (inUl) {
+        html += "</ul>";
+        inUl = false;
+      }
+
+      if (inOl) {
+        html += "</ol>";
+        inOl = false;
+      }
+
+    }
+
+    function inlineMarkdown(value) {
+
+      value = escapeHtml(value);
+
+      // inline code
+      value = value.replace(
+        /`([^`]+)`/g,
+        "<code>$1</code>"
+      );
+
+      // bold
+      value = value.replace(
+        /\*\*([^*]+)\*\*/g,
+        "<strong>$1</strong>"
+      );
+
+      return value;
+
+    }
+
+    let paragraph = [];
+
+    function flushParagraph() {
+
+      if (!paragraph.length) return;
+
+      closeLists();
+
+      const content = paragraph
+        .map(inlineMarkdown)
+        .join("<br>");
+
+      html += "<p>" + content + "</p>";
+
+      paragraph = [];
+
+    }
+
+    for (const line of lines) {
+
+      const trimmed = line.trim();
+
+      if (!trimmed) {
+        flushParagraph();
+        continue;
+      }
+
+      // code block placeholder
+      const codeMatch = trimmed.match(/^@@CODE(\d+)@@$/);
+
+      if (codeMatch) {
+
+        flushParagraph();
+        closeLists();
+
+        html += codeBlocks[
+          Number(codeMatch[1])
+        ];
+
+        continue;
+      }
+
+      // unordered list
+      const ulMatch = trimmed.match(/^[-*]\s+(.+)$/);
+
+      if (ulMatch) {
+
+        flushParagraph();
+
+        if (!inUl) {
+          closeLists();
+          html += "<ul>";
+          inUl = true;
+        }
+
+        html += "<li>" +
+          inlineMarkdown(ulMatch[1]) +
+          "</li>";
+
+        continue;
+      }
+
+      // numbered list
+      const olMatch = trimmed.match(/^\d+\.\s+(.+)$/);
+
+      if (olMatch) {
+
+        flushParagraph();
+
+        if (!inOl) {
+          closeLists();
+          html += "<ol>";
+          inOl = true;
+        }
+
+        html += "<li>" +
+          inlineMarkdown(olMatch[1]) +
+          "</li>";
+
+        continue;
+      }
+
+      // normal line
+      if (inUl || inOl) {
+        closeLists();
+      }
+
+      paragraph.push(trimmed);
+    }
+
+    flushParagraph();
+    closeLists();
+
+    return html;
+
+  }
+
+
+  /* ---------------------------------------------------------
+     CHAT
+  --------------------------------------------------------- */
+
+  input.addEventListener("keydown", function(e) {
+
+    if (e.key === "Enter" && !e.shiftKey) {
+
+      e.preventDefault();
+
+      sendMessage();
+
+    }
+
+  });
+
+
+  function usePrompt(text) {
+
+    input.value = text;
+
+    sendMessage();
+
+  }
+
+
+  function addMessage(text, user) {
+
+    document.getElementById("welcome")?.remove();
+
+    const row = document.createElement("div");
+
+    row.className =
+      "msg " +
+      (user ? "user" : "assistant");
+
+
+    const avatar = document.createElement("div");
+
+    avatar.className = "avatar";
+
+    avatar.textContent =
+      user ? "You" : "TC";
+
+
+    const bubble = document.createElement("div");
+
+    bubble.className = "bubble";
+
+
+    if (user) {
+
+      // User messages remain plain text.
+      bubble.textContent = text;
+
+    } else {
+
+      // Agent messages render Markdown.
+      bubble.innerHTML = renderMarkdown(text);
+
+    }
+
+
+    row.appendChild(avatar);
+    row.appendChild(bubble);
+
+    messages.appendChild(row);
+
+    messages.scrollTop =
+      messages.scrollHeight;
+
+  }
+
+
+  function showEvidence(items) {
+
+    evidence.innerHTML = "";
+
+    if (!items || !items.length) {
+
+      evidence.innerHTML =
+        '<div class="empty">' +
+        "No graph evidence returned." +
+        "</div>";
+
+      return;
+
+    }
+
+
+    items.forEach(function(item) {
+
+      const label =
+        document.createElement("div");
+
+      label.className =
+        "tool-label";
+
+      label.textContent =
+        item.tool || "Tool";
+
+
+      const pre =
+        document.createElement("pre");
+
+      // Evidence should be shown exactly as
+      // returned by the backend.
+      pre.textContent =
+        item.content || "";
+
+
+      evidence.appendChild(label);
+      evidence.appendChild(pre);
+
+    });
+
+  }
+
+
+  async function sendMessage() {
+
+    const question =
+      input.value.trim();
+
+
+    if (!question || send.disabled) {
+      return;
+    }
+
+
+    addMessage(question, true);
+
+    input.value = "";
+
+    send.disabled = true;
+
+    send.textContent = "...";
+
+
+    try {
+
+      const response =
+        await fetch("/chat", {
+
+          method: "POST",
+
+          headers: {
+            "Content-Type":
+              "application/json"
+          },
+
+          body: JSON.stringify({
+            message: question
+          })
+
+        });
+
+
+      const data =
+        await response.json();
+
+
+      if (!response.ok) {
+
+        throw new Error(
+          data.detail ||
+          "Request failed"
+        );
+
+      }
+
+
+      addMessage(
+        data.answer,
+        false
+      );
+
+
+      showEvidence(
+        data.evidence
+      );
+
+
+    } catch (err) {
+
+      addMessage(
+        "Backend error: " +
+        err.message,
+        false
+      );
+
+    } finally {
+
+      send.disabled = false;
+
+      send.textContent = "Send";
+
+    }
+
+  }
+
+</script>
+
+</body>
+</html>
